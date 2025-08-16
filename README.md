@@ -14,14 +14,14 @@ The ESP32-C3 Super Mini has 16 pins, with 11 programmable GPIOs supporting ADC, 
 | **Buttons**          | GPIO 0, 4, 5, 6, 7 | Digital Input (to GND) | Connected to GND with pull-up resistors (internal or external 10kΩ to 3.3V). Used for button inputs with software debouncing. Avoid SPI conflicts (GPIO 4, 5, 6, 7 are default SPI pins). |
 | **I2C Sensor (IMU)** | GPIO 8 (SDA), GPIO 9 (SCL) | I2C Communication | Default I2C pins. Requires external 4.7kΩ pull-up resistors to 3.3V. GPIO 8 is connected to the onboard LED (active LOW); GPIO 9 is connected to the BOOT button (strapping pin). Test for boot issues and consider reassigning to other GPIOs if needed. |
 | **Laser Pointer**    | GPIO 3 | Digital Output or PWM | Controls a laser pointer. If the laser requires >3.3V or high current, use a transistor (e.g., NPN or MOSFET) with a 1kΩ resistor to GPIO 3. Supports PWM for brightness control. |
-| **Haptic Engine Vibrator** | GPIO 21 | Digital Output or PWM | Controls a vibration motor. Use a transistor or driver (e.g., ULN2003) due to likely high current/voltage requirements. GPIO 21 is the default UART TX pin; reassign UART if needed. Supports PWM for intensity control. |
+| **Haptic Engine Vibrator** | GPIO 10 | Digital Output or PWM | Controls a vibration motor. Use a transistor or driver (e.g., ULN2003) due to likely high current/voltage requirements. GPIO 10 is the default UART TX pin; reassign UART if needed. Supports PWM for intensity control. |
 | **WS2812 RGB LED**  | GPIO 1 | Digital Output (Data) | Controls a WS2812 RGB LED strip or module. Connect the data pin to GPIO 1. Requires a stable 5V power supply and a common ground with the ESP32-C3. Use a library like `Adafruit_NeoPixel` or `FastLED` for control. |
 
 ### Pinout Notes
 - **Strapping Pins**: GPIO 8 (SDA, onboard LED) and GPIO 9 (SCL, BOOT button) are strapping pins, which may affect boot behavior. Monitor for issues during boot or I2C communication.
 - **GPIO 1**: General-purpose I/O, ADC1_CH1, PWM. Suitable for WS2812 RGB LED control, as it supports the precise timing required for WS2812 data signals.
 - **Default Interfaces** (Arduino IDE, ESP32C3 Dev Module):
-  - **UART**: GPIO 20 (RX), GPIO 21 (TX). Reassign UART (e.g., to GPIO 20 and 10) if using GPIO 21 for the haptic engine.
+  - **UART**: GPIO 20 (RX), GPIO 10 (TX). Reassign UART (e.g., to GPIO 20 and 10) if using GPIO 10 for the haptic engine.
   - **SPI**: GPIO 4 (SCK), GPIO 5 (SS), GPIO 6 (MISO), GPIO 7 (MOSI). Avoid SPI configuration if using these for buttons.
   - **I2C**: GPIO 8 (SDA), GPIO 9 (SCL). Default for the IMU.
 - **Available GPIOs**: GPIO 2, 10, 20 remain unused. Note that GPIO 2 is a strapping pin (avoid for general use), and GPIO 20 is the default UART RX pin.
@@ -77,11 +77,11 @@ The ESP32-C3 Super Mini has 16 pins, with 11 programmable GPIOs supporting ADC, 
 
 4. **Haptic Engine Vibrator**:
    - Use a transistor or driver (e.g., ULN2003) to control the haptic engine, as it likely requires >3.3V or high current.
-   - Connect GPIO 21 to the transistor base/gate via a 1kΩ resistor; haptic engine between 5V and transistor collector/drain; emitter/source to GND.
+   - Connect GPIO 10 to the transistor base/gate via a 1kΩ resistor; haptic engine between 5V and transistor collector/drain; emitter/source to GND.
    - If using UART, reassign it (e.g., `Serial.begin(115200, SERIAL_8N1, 20, 10);` for RX on GPIO 20, TX on GPIO 10).
    - Example code:
      ```cpp
-     const int hapticPin = 21;
+     const int hapticPin = 10;
      void setup() {
        pinMode(hapticPin, OUTPUT);
        digitalWrite(hapticPin, LOW); // Off
@@ -143,7 +143,7 @@ The ESP32-C3 Super Mini has 16 pins, with 11 programmable GPIOs supporting ADC, 
 - **Power Consumption**: For deep sleep, ensure peripherals (e.g., WS2812, laser, haptic engine) are powered off via transistors and consider removing the power LED to approach the 43µA specification (comment #22).
 - **GPIO Conflicts**:
   - Avoid SPI configuration if using GPIO 4, 5, 6, 7 for buttons.
-  - Reassign UART if using GPIO 21 for the haptic engine.
+  - Reassign UART if using GPIO 10 for the haptic engine.
 - **WS2812 RGB LED**:
   - Ensure a stable 5V power supply, as voltage drops can cause unreliable LED behavior.
   - Limit the number of LEDs or brightness to manage current draw (e.g., `strip.setBrightness(50);`).
