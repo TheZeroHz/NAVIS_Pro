@@ -24,7 +24,7 @@ The ESP32-C3 Super Mini has 16 pins, with 11 programmable GPIOs supporting ADC, 
   - **UART**: GPIO 20 (RX), GPIO 10 (TX). Reassign UART (e.g., to GPIO 20 and 10) if using GPIO 10 for the haptic engine.
   - **SPI**: GPIO 4 (SCK), GPIO 5 (SS), GPIO 6 (MISO), GPIO 7 (MOSI). Avoid SPI configuration if using these for buttons.
   - **I2C**: GPIO 8 (SDA), GPIO 9 (SCL). Default for the IMU.
-- **Available GPIOs**: GPIO 2, 10, 20 remain unused. Note that GPIO 2 is a strapping pin (avoid for general use), and GPIO 20 is the default UART RX pin.
+- **Available GPIOs**: GPIO 2, 20, 21 remain unused. Note that GPIO 2 is a strapping pin (avoid for general use), and GPIO 20,21 is the default UART RX,TX pin.
 
 ## Setup Instructions
 
