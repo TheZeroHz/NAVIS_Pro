@@ -1,7 +1,7 @@
 #include <Bounce2.h>
 
 #define BTN_PIN   4   // Button input (active LOW with pull-up)
-#define LED_PIN   3   // LED pin
+#define LED_PIN   2   // LED pin
 
 Bounce btn = Bounce();
 
@@ -18,14 +18,22 @@ TaskHandle_t blinkTaskHandle = NULL;
 
 void setup() {
   Serial.begin(115200);
+  delay(100);
   
+  // Configure LED pin FIRST and ensure it's OFF
   pinMode(LED_PIN, OUTPUT);
   digitalWrite(LED_PIN, LOW);
+  
+  // Configure strapping pins as inputs with pull-up for safe boot
+  // But AVOID setting LED_PIN as INPUT_PULLUP since it's our output
+  pinMode(8, INPUT_PULLUP); // GPIO 8 (Onboard LED, I2C SDA) 
+  pinMode(9, INPUT_PULLUP); // GPIO 9 (BOOT Button, I2C SCL)
+  delay(100);
   
   btn.attach(BTN_PIN, INPUT_PULLUP);
   btn.interval(10);
   
-  // Create blink task
+  // Create blink task - it will run continuously
   xTaskCreate(
     blinkTask,          // Task function
     "BlinkTask",        // Task name
@@ -109,50 +117,32 @@ void loop() {
 
 void startBlinking() {
   blinkingActive = true;
-  
-  // Wake up the blink task
-  if (blinkTaskHandle != NULL) {
-    vTaskResume(blinkTaskHandle);
-  }
 }
 
 void stopBlinking() {
   blinkingActive = false;
-  
-  // Suspend the blink task to save CPU
-  if (blinkTaskHandle != NULL) {
-    vTaskSuspend(blinkTaskHandle);
-  }
 }
 
 void blinkTask(void *parameter) {
-  bool ledState = false;
-  
-  // Suspend task initially
-  vTaskSuspend(NULL);
-  
   while (true) {
     if (blinkingActive) {
-      // Blink ON
-      ledState = true;
+      // Blink ON - ensure clean HIGH signal
       digitalWrite(LED_PIN, HIGH);
-      vTaskDelay(pdMS_TO_TICKS(120));  // ON for 120ms
+      vTaskDelay(pdMS_TO_TICKS(1000));  // ON for 200ms (longer for visibility)
       
+      // Check if still should be blinking
       if (!blinkingActive) {
         digitalWrite(LED_PIN, LOW);
-        continue;  // Exit if stopped during delay
+        continue;
       }
       
-      // Blink OFF
-      ledState = false;
+      // Blink OFF - ensure clean LOW signal
       digitalWrite(LED_PIN, LOW);
-      vTaskDelay(pdMS_TO_TICKS(120));  // OFF for 120ms
-      
-      // Continue blinking until manually stopped
+      vTaskDelay(pdMS_TO_TICKS(1000));  // OFF for 200ms (longer for visibility)
     } else {
-      // If no blinking needed, suspend the task
+      // Not blinking - ensure LED is OFF and wait
       digitalWrite(LED_PIN, LOW);
-      vTaskSuspend(NULL);
+      vTaskDelay(pdMS_TO_TICKS(100));  // Check every 100ms when not blinking
     }
   }
 }
